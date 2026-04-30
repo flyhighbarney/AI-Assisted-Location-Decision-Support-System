@@ -129,7 +129,7 @@ if __name__ == "__main__":
     TEST_PK = _get_test_placekey()
 
     print("=" * 64)
-    print("  Performance Benchmark  |  Module 4  |  Lead: Johnson")
+    print("  Performance Benchmark  |  Module 4  ")
     print("=" * 64)
     print(f"  Category  : {CATEGORY}")
     print(f"  Placekey  : {TEST_PK}")
