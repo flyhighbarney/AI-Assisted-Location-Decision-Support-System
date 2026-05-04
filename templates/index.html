@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>AI-Assisted Location Decision Support System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+
+<body>
+  <header>
+    <h1>AI-Assisted Location Decision Support System</h1>
+    <p>Worcester, MA | Huff Model Prototype</p>
+  </header>
+
+  <main class="layout">
+    <section class="panel chat-panel">
+      <h2>Guided Chatbot</h2>
+
+      <div id="chatMessages" class="chat-messages"></div>
+
+      <div class="input-row">
+        <input id="chatInput" type="text" placeholder="Type your answer or question..." />
+        <button id="sendBtn">Send</button>
+      </div>
+
+      <div class="hint">
+        Tip: click the map to choose the proposed store location.
+      </div>
+    </section>
+
+    <section class="panel map-panel">
+      <h2>Map</h2>
+      <div id="map"></div>
+      <div id="selectedLocation" class="selected-location">
+        No candidate location selected yet.
+      </div>
+    </section>
+
+    <section class="panel result-panel">
+      <h2>Model Result</h2>
+
+      <div id="resultSummary" class="result-summary">
+        No model result yet.
+      </div>
+
+      <h3>Nearby Competitors / Attraction Scores</h3>
+      <div id="competitorTable" class="table-wrap"></div>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/static/map.js"></script>
+  <script src="/static/chat.js"></script>
+</body>
+</html>
