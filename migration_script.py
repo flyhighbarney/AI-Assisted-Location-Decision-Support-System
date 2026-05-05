@@ -12,7 +12,7 @@ What this script does:
 Tables created
 --------------
   cbg_master            – demographics + lat/lon + x_proj/y_proj
-  poi_master            – all point-of-interest records (area > 0)
+  poi_master            – all point-of-interest records (area > 0)test comment
   cbg_poi_distance      – CBG <-> POI distances (> 0 m)
   cbg_poi_visits        – observed visit counts
   calibrated_parameters – Huff alpha/beta per category
