@@ -250,21 +250,29 @@ def store_tables(
 ):
     print("  Storing tables (Elizabeth) ...")
 
-    # TODO (Elizabeth): store cbg_master as table "CBG_Master"
+    # CBG_Master — demographics + projected centroids (x_proj, y_proj)
+    cbg_master.to_sql("CBG_Master", conn, if_exists="replace", index=False)
+    print("    CBG_Master stored")
 
-    # TODO (Elizabeth): store comp_summary as table "Competitor_Summary"
+    # Competitor_Summary — pre-computed utility sums per CBG per NAICS
+    comp_summary.to_sql("Competitor_Summary", conn, if_exists="replace", index=False)
+    print("    Competitor_Summary stored")
 
-    # TODO (Elizabeth): build ref DataFrame from data["params"],
-    #                   rename "NAICS code" -> "naics_code",
-    #                   strip top_category whitespace,
-    #                   store as table "Ref_Categories"
+    # Ref_Categories — alpha/beta parameters per NAICS code
+    ref = data["params"][["top_category", "NAICS code", "alpha", "beta"]].copy()
+    ref["top_category"] = ref["top_category"].str.strip()
+    ref = ref.rename(columns={"NAICS code": "naics_code"})
+    ref.to_sql("Ref_Categories", conn, if_exists="replace", index=False)
+    print("    Ref_Categories stored")
 
-    # TODO (Elizabeth): store market_pot as table "Market_Potential"
+    # Market_Potential — pre-aggregated visit demand per CBG per NAICS
+    market_pot.to_sql("Market_Potential", conn, if_exists="replace", index=False)
+    print("    Market_Potential stored")
 
-    # TODO (Elizabeth): filter data["pois"] to wkt_area_sq_meters > 0,
-    #                   store as table "POI_Master"
-
-    raise NotImplementedError("Elizabeth: complete store_tables() above.")
+    # POI_Master — cleaned POI records for competitor map display
+    pois_clean = data["pois"][data["pois"]["wkt_area_sq_meters"] > 0].copy()
+    pois_clean.to_sql("POI_Master", conn, if_exists="replace", index=False)
+    print("    POI_Master stored")
 
 
 # ================================================================
@@ -297,15 +305,15 @@ def store_tables(
 def apply_indexes(conn: sqlite3.Connection):
     print("  Applying SQL indexes (Elizabeth) ...")
 
-    # TODO (Elizabeth): add CREATE INDEX statements here
-    # Example of one index to get you started:
-    #   conn.execute(
-    #       "CREATE INDEX IF NOT EXISTS idx_cbgm_geoid ON CBG_Master(geoid)"
-    #   )
-
-    # TODO (Elizabeth): call conn.commit() after all indexes are added
-
-    raise NotImplementedError("Elizabeth: complete apply_indexes() above.")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_cbgm_geoid      ON CBG_Master(geoid)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_cs_top_category ON Competitor_Summary(top_category)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_cs_geoid        ON Competitor_Summary(geoid)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_cs_geoid_naics  ON Competitor_Summary(geoid, naics_code)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_ref_top_cat     ON Ref_Categories(top_category)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_ref_naics       ON Ref_Categories(naics_code)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_mp_geoid_naics  ON Market_Potential(geoid, naics_code)")
+    conn.commit()
+    print("    7 indexes applied")
 
 
 # ================================================================

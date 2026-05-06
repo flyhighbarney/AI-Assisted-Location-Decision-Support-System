@@ -69,23 +69,15 @@ def _latlon_to_utm19n(lat: float, lon: float) -> tuple:
 def huff_v2(naics: int, candidate_lat: float, candidate_lon: float,
             floor_area: float, conn: sqlite3.Connection) -> tuple:
 
-    # ── ELIZABETH — TODO 1 ────────────────────────────────────────
-    # Fetch alpha and beta for this NAICS code from Ref_Categories.
-    # Use a parameterized query with ? placeholder — naics comes from
-    # the user so it must never be put directly in the SQL string.
-    #
-    # The query should be:
-    #   SELECT alpha, beta FROM Ref_Categories WHERE naics_code = ?
-    # Pass naics as the parameter using params=(naics,)
-    #
-    # Store the result in params_row and raise ValueError if empty.
-    # Then extract:
-    #   alpha = float(params_row.iloc[0]["alpha"])
-    #   beta  = float(params_row.iloc[0]["beta"])
-    #
-    # Replace this placeholder with your working code:
-    raise NotImplementedError("Elizabeth: complete TODO 1 — fetch alpha/beta.")
-    # ─────────────────────────────────────────────────────────────
+    # ELIZABETH — fetch alpha and beta (parameterized query)
+    params_row = pd.read_sql_query(
+        "SELECT alpha, beta FROM Ref_Categories WHERE naics_code = ?",
+        conn, params=(naics,)
+    )
+    if params_row.empty:
+        raise ValueError(f"No calibrated parameters found for NAICS {naics}.")
+    alpha = float(params_row.iloc[0]["alpha"])
+    beta  = float(params_row.iloc[0]["beta"])
 
     # BARNABAS — project the new candidate site to metres
     new_x, new_y = _latlon_to_utm19n(candidate_lat, candidate_lon)
@@ -102,37 +94,17 @@ def huff_v2(naics: int, candidate_lat: float, candidate_lon: float,
     ) ** 0.5
     cbg_df["distance"] = cbg_df["distance"].clip(lower=DISTANCE_FLOOR)
 
-    # ── ELIZABETH — TODO 2 ────────────────────────────────────────
-    # Fetch pre-computed competitor utility sums for this NAICS.
-    # Use a parameterized query with ? placeholder.
-    #
-    # The query should be:
-    #   SELECT geoid, comp_utility_sum
-    #   FROM Competitor_Summary
-    #   WHERE naics_code = ?
-    # Pass naics as the parameter using params=(naics,)
-    #
-    # Store the result in comp_df.
-    #
-    # Replace this placeholder with your working code:
-    raise NotImplementedError("Elizabeth: complete TODO 2 — fetch comp_utility_sum.")
-    # ─────────────────────────────────────────────────────────────
+    # ELIZABETH — fetch pre-computed competitor utility sums (parameterized query)
+    comp_df = pd.read_sql_query(
+        "SELECT geoid, comp_utility_sum FROM Competitor_Summary WHERE naics_code = ?",
+        conn, params=(naics,)
+    )
 
-    # ── ELIZABETH — TODO 3 ────────────────────────────────────────
-    # Fetch pre-aggregated market potential for this NAICS.
-    # Use a parameterized query with ? placeholder.
-    #
-    # The query should be:
-    #   SELECT geoid, market_potential
-    #   FROM Market_Potential
-    #   WHERE naics_code = ?
-    # Pass naics as the parameter using params=(naics,)
-    #
-    # Store the result in mkt_df.
-    #
-    # Replace this placeholder with your working code:
-    raise NotImplementedError("Elizabeth: complete TODO 3 — fetch market_potential.")
-    # ─────────────────────────────────────────────────────────────
+    # ELIZABETH — fetch pre-aggregated market potential (parameterized query)
+    mkt_df = pd.read_sql_query(
+        "SELECT geoid, market_potential FROM Market_Potential WHERE naics_code = ?",
+        conn, params=(naics,)
+    )
 
     # BARNABAS — merge all lookups into one working DataFrame
     df = cbg_df.merge(comp_df, on="geoid", how="left")
@@ -155,19 +127,12 @@ def huff_v2(naics: int, candidate_lat: float, candidate_lon: float,
     total_market    = float(df["market_potential"].sum())
     market_share    = total_predicted / total_market if total_market > 0 else 0.0
 
-    # ── ELIZABETH — TODO 4 ────────────────────────────────────────
-    # Fetch up to 20 competitor POIs for the dashboard map display.
-    # Use a parameterized query with ? placeholder.
-    #
-    # The query should select:
-    #   location_name, placekey, latitude, longitude, wkt_area_sq_meters
-    # FROM POI_Master WHERE naics_code = ? LIMIT 20
-    #
-    # Store the result in comp_pois (call .fillna("") on it).
-    #
-    # Replace this placeholder with your working code:
-    raise NotImplementedError("Elizabeth: complete TODO 4 — fetch competitor POIs.")
-    # ─────────────────────────────────────────────────────────────
+    # ELIZABETH — fetch competitor POIs for dashboard map (parameterized query)
+    comp_pois = pd.read_sql_query(
+        """SELECT location_name, placekey, latitude, longitude, wkt_area_sq_meters
+           FROM POI_Master WHERE naics_code = ? LIMIT 20""",
+        conn, params=(naics,)
+    ).fillna("")
 
     # BARNABAS — format competitor list for the dashboard
     competitors = []
